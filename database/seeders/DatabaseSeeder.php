@@ -13,6 +13,7 @@ use App\Models\CrmOptionValue;
 use App\Models\CrmSetting;
 use App\Models\User;
 use App\Support\CRM\PipelineDefaults;
+use Faker\Generator;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -109,7 +110,7 @@ class DatabaseSeeder extends Seeder
             $whatsappChannel->users()->sync([$user->id]);
         });
 
-        if (Company::query()->doesntExist()) {
+        if (class_exists(Generator::class) && Company::query()->doesntExist()) {
             Company::factory()
                 ->count(8)
                 ->recycle($users)
