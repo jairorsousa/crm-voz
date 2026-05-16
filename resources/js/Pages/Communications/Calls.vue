@@ -162,6 +162,19 @@ const bindCallEvents = (call: Call) => {
     });
 };
 
+const requestMicrophone = async () => {
+    if (!navigator.mediaDevices?.getUserMedia) {
+        throw new Error('Este navegador não disponibilizou acesso ao microfone.');
+    }
+
+    const stream = await navigator.mediaDevices.getUserMedia({
+        audio: true,
+        video: false,
+    });
+
+    stream.getTracks().forEach((track) => track.stop());
+};
+
 const ensureDevice = async () => {
     if (voiceDevice.value) return voiceDevice.value;
 
@@ -230,6 +243,8 @@ const startBrowserCall = async () => {
 
     try {
         softphoneError.value = null;
+        softphoneStatus.value = 'connecting';
+        await requestMicrophone();
         const device = await ensureDevice();
 
         softphoneStatus.value = 'dialing';
@@ -249,10 +264,18 @@ const startBrowserCall = async () => {
         bindCallEvents(call);
     } catch (error) {
         softphoneStatus.value = 'idle';
-        softphoneError.value =
-            error instanceof Error
-                ? error.message
-                : 'Não foi possível iniciar a ligação.';
+        if (error instanceof DOMException && error.name === 'NotAllowedError') {
+            softphoneError.value =
+                'Microfone bloqueado. Libere o microfone nas configurações do site e tente novamente.';
+        } else if (error instanceof DOMException && error.name === 'NotFoundError') {
+            softphoneError.value =
+                'Nenhum microfone foi encontrado neste dispositivo.';
+        } else {
+            softphoneError.value =
+                error instanceof Error
+                    ? error.message
+                    : 'Não foi possível iniciar a ligação.';
+        }
     }
 };
 
