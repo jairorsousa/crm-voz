@@ -124,6 +124,7 @@ Valores mínimos para produção:
 ```dotenv
 APP_NAME="VOZ CRM"
 APP_ENV=production
+APP_KEY=
 APP_DEBUG=false
 APP_URL=https://crm.grupovoz.dev.br
 APP_PORT=8080
