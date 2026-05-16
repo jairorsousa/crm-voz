@@ -15,7 +15,9 @@ use App\Models\Company;
 use App\Support\CRM\CommunicationChannelResolver;
 use App\Support\CRM\CommunicationOptions;
 use App\Support\CRM\CommunicationTimeline;
+use App\Support\CRM\TwilioVoiceAccessToken;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -53,7 +55,7 @@ class CallController extends Controller
         ]);
     }
 
-    public function store(StoreCallRequest $request): RedirectResponse
+    public function store(StoreCallRequest $request): JsonResponse|RedirectResponse
     {
         $validated = $request->validated();
         abort_unless(Company::query()->visibleTo($request->user())->whereKey($validated['company_id'])->exists(), 403);
@@ -77,6 +79,26 @@ class CallController extends Controller
             'queued_at' => now(),
         ]);
 
+        if (($validated['dial_mode'] ?? 'server') === 'browser') {
+            $message->update([
+                'status' => CommunicationStatus::Sent,
+                'sent_at' => now(),
+            ]);
+
+            CommunicationTimeline::record($message->refresh(), 'Ligação iniciada pelo CRM');
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Ligação pelo CRM registrada no histórico.',
+                    'call_id' => $message->id,
+                ], 201);
+            }
+
+            return redirect()
+                ->route('calls.index')
+                ->with('success', 'Ligação pelo CRM registrada no histórico.');
+        }
+
         CommunicationTimeline::record($message, 'Tentativa de ligação registrada');
 
         StartTwilioCall::dispatch($message->id);
@@ -84,6 +106,32 @@ class CallController extends Controller
         return redirect()
             ->route('calls.index')
             ->with('success', 'Ligação registrada e enviada para a fila de comunicação.');
+    }
+
+    public function token(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'communication_channel_id' => ['nullable', 'exists:communication_channels,id'],
+        ]);
+
+        try {
+            $channel = CommunicationChannelResolver::authorizedFor($validated['communication_channel_id'] ?? null, CommunicationChannel::Call, $request->user());
+            $identity = 'user-'.$request->user()->id;
+
+            return response()->json([
+                'token' => TwilioVoiceAccessToken::make($channel->settings(), $identity),
+                'identity' => $identity,
+                'caller_id' => $channel->settings()['caller_id'] ?? $channel->settings()['from_number'] ?? null,
+                'channel' => [
+                    'id' => $channel->id,
+                    'name' => $channel->name,
+                ],
+            ]);
+        } catch (RuntimeException $exception) {
+            return response()->json([
+                'message' => $exception->getMessage(),
+            ], 422);
+        }
     }
 
     public function update(UpdateCallRequest $request, CommunicationMessage $message): RedirectResponse

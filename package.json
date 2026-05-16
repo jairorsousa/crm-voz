@@ -30,5 +30,8 @@
         "vue": "^3.4.0",
         "vue-eslint-parser": "^10.4.0",
         "vue-tsc": "^2.0.24"
+    },
+    "dependencies": {
+        "@twilio/voice-sdk": "^2.18.3"
     }
 }

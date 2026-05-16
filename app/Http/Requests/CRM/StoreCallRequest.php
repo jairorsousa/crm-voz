@@ -37,6 +37,7 @@ class StoreCallRequest extends FormRequest
             'communication_channel_id' => ['nullable', 'exists:communication_channels,id'],
             'to_address' => ['required', 'string', 'min:10', 'max:20'],
             'notes' => ['nullable', 'string', 'max:5000'],
+            'dial_mode' => ['nullable', Rule::in(['server', 'browser'])],
         ];
     }
 }

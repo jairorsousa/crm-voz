@@ -87,6 +87,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->can('viewCalls', User::class)
         ->middleware('throttle:communications')
         ->name('calls.store');
+    Route::post('/ligacoes/token', [CallController::class, 'token'])
+        ->can('viewCalls', User::class)
+        ->middleware('throttle:communications')
+        ->name('calls.token');
     Route::patch('/ligacoes/{message}', [CallController::class, 'update'])
         ->can('viewCalls', User::class)
         ->name('calls.update');
@@ -192,6 +196,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 Route::post('/webhooks/twilio/calls', [CommunicationWebhookController::class, 'twilioCall'])
     ->middleware('throttle:webhooks')
     ->name('webhooks.twilio.calls');
+Route::post('/twilio/voice', [CommunicationWebhookController::class, 'twilioVoice'])
+    ->middleware('throttle:webhooks')
+    ->name('twilio.voice');
 Route::post('/webhooks/evolution/whatsapp', [CommunicationWebhookController::class, 'evolutionWhatsapp'])
     ->middleware('throttle:webhooks')
     ->name('webhooks.evolution.whatsapp');

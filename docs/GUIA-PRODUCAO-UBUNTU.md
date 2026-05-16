@@ -367,6 +367,15 @@ https://crm.grupovoz.dev.br/webhooks/twilio/calls
 https://crm.grupovoz.dev.br/webhooks/evolution/whatsapp
 ```
 
+Para ligar e falar pelo CRM usando Twilio Voice no navegador, configure o TwiML App da Twilio com:
+
+```txt
+Voice Request URL: https://crm.grupovoz.dev.br/twilio/voice
+Method: POST
+```
+
+Depois, em `Canais > Ligação VOZ`, preencha `Account SID`, `API Key SID`, `API Secret`, `TwiML App SID` e `Caller ID`. O navegador pedirá permissão de microfone quando o usuário clicar em `Ligar pelo CRM`.
+
 Se usar token de webhook, envie no header:
 
 ```txt

@@ -15,9 +15,25 @@ use App\Support\CRM\CommunicationTimeline;
 use App\Support\CRM\IntegrationSettings;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class CommunicationWebhookController extends Controller
 {
+    public function twilioVoice(Request $request): Response
+    {
+        $to = preg_replace('/[^\d+]/', '', (string) $request->input('To', '')) ?: '';
+        $callerId = preg_replace('/[^\d+]/', '', (string) ($request->input('CallerId') ?: config('services.twilio.caller_id'))) ?: '';
+
+        if (blank($to) || blank($callerId)) {
+            return $this->twiml('<Say language="pt-BR">Nao foi possivel iniciar a ligacao.</Say>');
+        }
+
+        $callerId = htmlspecialchars($callerId, ENT_XML1 | ENT_QUOTES, 'UTF-8');
+        $to = htmlspecialchars($to, ENT_XML1 | ENT_QUOTES, 'UTF-8');
+
+        return $this->twiml("<Dial callerId=\"{$callerId}\"><Number>{$to}</Number></Dial>");
+    }
+
     public function twilioCall(Request $request): JsonResponse
     {
         $channel = $this->authorizeWebhook('twilio', $request);
@@ -51,6 +67,15 @@ class CommunicationWebhookController extends Controller
         $event->update(['processed_at' => now()]);
 
         return response()->json(['status' => 'ok']);
+    }
+
+    private function twiml(string $body): Response
+    {
+        return response(
+            '<?xml version="1.0" encoding="UTF-8"?><Response>'.$body.'</Response>',
+            200,
+            ['Content-Type' => 'text/xml; charset=UTF-8'],
+        );
     }
 
     public function evolutionWhatsapp(Request $request): JsonResponse

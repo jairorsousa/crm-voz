@@ -9,8 +9,9 @@ import JrSelect from '@/Components/Jr/JrSelect.vue';
 import JrTextarea from '@/Components/Jr/JrTextarea.vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import type { CommunicationListItem, CrmOptions, Paginated } from '@/types/crm';
+import type { Call, Device } from '@twilio/voice-sdk';
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import { computed, watch } from 'vue';
+import { computed, onBeforeUnmount, ref, shallowRef, watch } from 'vue';
 
 const props = defineProps<{
     messages: Paginated<CommunicationListItem>;
@@ -37,7 +38,14 @@ const callForm = useForm({
     opportunity_id: '',
     to_address: '',
     notes: '',
+    dial_mode: 'browser',
 });
+
+const voiceDevice = shallowRef<Device | null>(null);
+const activeCall = shallowRef<Call | null>(null);
+const softphoneStatus = ref<'idle' | 'connecting' | 'ready' | 'dialing' | 'in_call' | 'ended'>('idle');
+const softphoneError = ref<string | null>(null);
+const callerId = ref<string | null>(null);
 
 const filteredContacts = computed(() =>
     (props.options.contacts ?? []).filter(
@@ -88,6 +96,158 @@ const submitCall = () => {
         onSuccess: () => callForm.reset('to_address', 'notes'),
     });
 };
+
+const canStartBrowserCall = computed(
+    () =>
+        Boolean(callForm.communication_channel_id) &&
+        Boolean(callForm.company_id) &&
+        Boolean(callForm.contact_id) &&
+        Boolean(callForm.to_address) &&
+        softphoneStatus.value !== 'connecting' &&
+        softphoneStatus.value !== 'dialing' &&
+        softphoneStatus.value !== 'in_call',
+);
+
+const softphoneLabel = computed(() => {
+    const labels = {
+        idle: 'Telefone desconectado',
+        connecting: 'Conectando microfone',
+        ready: 'Telefone pronto',
+        dialing: 'Chamando cliente',
+        in_call: 'Em ligação',
+        ended: 'Ligação encerrada',
+    };
+
+    return labels[softphoneStatus.value];
+});
+
+const bindCallEvents = (call: Call) => {
+    call.on('accept', () => {
+        softphoneStatus.value = 'in_call';
+        void recordBrowserCall().catch(() => {
+            softphoneError.value =
+                'A ligação conectou, mas não foi possível registrar o histórico.';
+        });
+    });
+    call.on('disconnect', () => {
+        softphoneStatus.value = 'ended';
+        activeCall.value = null;
+    });
+    call.on('cancel', () => {
+        softphoneStatus.value = 'ended';
+        activeCall.value = null;
+    });
+    call.on('reject', () => {
+        softphoneStatus.value = 'ended';
+        activeCall.value = null;
+    });
+    call.on('error', (error) => {
+        softphoneStatus.value = 'ended';
+        softphoneError.value = error.message;
+        activeCall.value = null;
+    });
+};
+
+const ensureDevice = async () => {
+    if (voiceDevice.value) return voiceDevice.value;
+
+    softphoneError.value = null;
+    softphoneStatus.value = 'connecting';
+
+    const response = await window.axios.post(
+        route('calls.token'),
+        {
+            communication_channel_id: callForm.communication_channel_id,
+        },
+        {
+            headers: {
+                Accept: 'application/json',
+            },
+        },
+    );
+    callerId.value = response.data.caller_id ?? null;
+    const { Device: TwilioDevice } = await import('@twilio/voice-sdk');
+    const device = new TwilioDevice(response.data.token, {
+        logLevel: 1,
+    });
+
+    device.on('registered', () => {
+        softphoneStatus.value = 'ready';
+    });
+    device.on('unregistered', () => {
+        softphoneStatus.value = 'idle';
+    });
+    device.on('error', (error) => {
+        softphoneStatus.value = 'idle';
+        softphoneError.value = error.message;
+    });
+
+    await device.register();
+    voiceDevice.value = device;
+
+    return device;
+};
+
+const recordBrowserCall = async () => {
+    await window.axios.post(
+        route('calls.store'),
+        {
+            communication_channel_id: callForm.communication_channel_id,
+            company_id: callForm.company_id,
+            contact_id: callForm.contact_id,
+            opportunity_id: callForm.opportunity_id || null,
+            to_address: callForm.to_address,
+            notes: callForm.notes,
+            dial_mode: 'browser',
+        },
+        {
+            headers: {
+                Accept: 'application/json',
+            },
+        },
+    );
+};
+
+const startBrowserCall = async () => {
+    if (!canStartBrowserCall.value) {
+        softphoneError.value = 'Selecione canal, empresa, contato e telefone antes de ligar.';
+        return;
+    }
+
+    try {
+        softphoneError.value = null;
+        const device = await ensureDevice();
+
+        softphoneStatus.value = 'dialing';
+        const call = await device.connect({
+            params: {
+                To: callForm.to_address,
+                CallerId: callerId.value ?? '',
+            },
+        });
+
+        activeCall.value = call;
+        bindCallEvents(call);
+    } catch (error) {
+        softphoneStatus.value = 'idle';
+        softphoneError.value =
+            error instanceof Error
+                ? error.message
+                : 'Não foi possível iniciar a ligação.';
+    }
+};
+
+const hangupCall = () => {
+    activeCall.value?.disconnect();
+    voiceDevice.value?.disconnectAll();
+    activeCall.value = null;
+    softphoneStatus.value = 'ended';
+};
+
+onBeforeUnmount(() => {
+    activeCall.value?.disconnect();
+    voiceDevice.value?.destroy();
+});
 
 const statusVariant = (status: string) => {
     if (['sent', 'completed', 'delivered'].includes(status)) return 'success';
@@ -164,13 +324,60 @@ const formatDate = (value: string | null) =>
                         :error="callForm.errors.notes"
                         :rows="4"
                     />
-                    <JrButton
-                        type="submit"
-                        icon="call"
-                        :disabled="callForm.processing"
-                    >
-                        Registrar ligação
-                    </JrButton>
+                    <div class="rounded-lg border border-mono-200 bg-mono-50 p-3">
+                        <div class="flex items-center justify-between gap-3">
+                            <div>
+                                <p class="text-xs font-semibold uppercase text-mono-500">
+                                    Softphone
+                                </p>
+                                <p class="mt-1 text-sm font-bold text-mono-900">
+                                    {{ softphoneLabel }}
+                                </p>
+                            </div>
+                            <JrBadge
+                                :variant="
+                                    softphoneStatus === 'in_call'
+                                        ? 'success'
+                                        : softphoneStatus === 'ended'
+                                          ? 'info'
+                                          : 'neutral'
+                                "
+                            >
+                                {{
+                                    softphoneStatus === 'in_call'
+                                        ? 'Ao vivo'
+                                        : softphoneStatus === 'ready'
+                                          ? 'Pronto'
+                                          : 'Aguardando'
+                                }}
+                            </JrBadge>
+                        </div>
+                        <p
+                            v-if="softphoneError"
+                            class="mt-3 text-sm font-semibold text-error"
+                        >
+                            {{ softphoneError }}
+                        </p>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        <JrButton
+                            type="button"
+                            icon="call"
+                            :disabled="!canStartBrowserCall"
+                            @click="startBrowserCall"
+                        >
+                            Ligar pelo CRM
+                        </JrButton>
+                        <JrButton
+                            type="button"
+                            icon="call_end"
+                            variant="standard"
+                            :disabled="softphoneStatus !== 'in_call' && softphoneStatus !== 'dialing'"
+                            @click="hangupCall"
+                        >
+                            Encerrar
+                        </JrButton>
+                    </div>
                 </form>
             </JrCard>
 

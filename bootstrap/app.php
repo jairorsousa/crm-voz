@@ -22,6 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->validateCsrfTokens(except: [
             'webhooks/twilio/calls',
+            'twilio/voice',
             'webhooks/evolution/whatsapp',
         ]);
     })
