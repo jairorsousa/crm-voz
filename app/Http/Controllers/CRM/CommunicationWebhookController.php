@@ -21,8 +21,18 @@ class CommunicationWebhookController extends Controller
 {
     public function twilioVoice(Request $request): Response
     {
-        $to = preg_replace('/[^\d+]/', '', (string) $request->input('To', '')) ?: '';
+        $to = preg_replace('/\D+/', '', (string) $request->input('To', '')) ?: '';
         $callerId = preg_replace('/[^\d+]/', '', (string) ($request->input('CallerId') ?: config('services.twilio.caller_id'))) ?: '';
+
+        if (str_starts_with($to, '00')) {
+            $to = mb_substr($to, 2);
+        }
+
+        if (filled($to) && ! str_starts_with($to, '55')) {
+            $to = '55'.$to;
+        }
+
+        $to = filled($to) ? '+'.$to : '';
 
         if (blank($to) || blank($callerId)) {
             return $this->twiml('<Say language="pt-BR">Nao foi possivel iniciar a ligacao.</Say>');

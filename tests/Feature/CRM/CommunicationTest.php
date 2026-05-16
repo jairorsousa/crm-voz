@@ -85,6 +85,7 @@ class CommunicationTest extends TestCase
             'contact_id' => $contact->id,
             'channel' => CommunicationChannel::Call->value,
             'status' => CommunicationStatus::Failed->value,
+            'to_address' => '+5511999999999',
         ]);
 
         $message = CommunicationMessage::query()->firstOrFail();

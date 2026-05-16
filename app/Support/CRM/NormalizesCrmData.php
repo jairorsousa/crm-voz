@@ -13,6 +13,25 @@ trait NormalizesCrmData
         return preg_replace('/\D+/', '', $value);
     }
 
+    protected function normalizeNullableBrazilPhoneE164(?string $value): ?string
+    {
+        $digits = $this->normalizeNullableDigits($value);
+
+        if (blank($digits)) {
+            return null;
+        }
+
+        if (str_starts_with($digits, '00')) {
+            $digits = mb_substr($digits, 2);
+        }
+
+        if (! str_starts_with($digits, '55')) {
+            $digits = '55'.$digits;
+        }
+
+        return '+'.$digits;
+    }
+
     protected function normalizeNullableEmail(?string $value): ?string
     {
         if (blank($value)) {

@@ -18,7 +18,7 @@ class StoreCallRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->merge([
-            'to_address' => $this->normalizeNullableDigits($this->input('to_address')),
+            'to_address' => $this->normalizeNullableBrazilPhoneE164($this->input('to_address')),
             'notes' => $this->normalizeNullableText($this->input('notes')),
         ]);
     }
@@ -35,7 +35,7 @@ class StoreCallRequest extends FormRequest
             'contact_id' => ['required', Rule::exists('contacts', 'id')->where('company_id', $companyId)],
             'opportunity_id' => ['nullable', Rule::exists('opportunities', 'id')->where('company_id', $companyId)],
             'communication_channel_id' => ['nullable', 'exists:communication_channels,id'],
-            'to_address' => ['required', 'string', 'min:10', 'max:20'],
+            'to_address' => ['required', 'string', 'regex:/^\+55\d{10,11}$/'],
             'notes' => ['nullable', 'string', 'max:5000'],
             'dial_mode' => ['nullable', Rule::in(['server', 'browser'])],
         ];

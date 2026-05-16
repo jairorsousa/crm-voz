@@ -121,6 +121,20 @@ const softphoneLabel = computed(() => {
     return labels[softphoneStatus.value];
 });
 
+const normalizeBrazilPhone = (value: string) => {
+    let digits = value.replace(/\D+/g, '');
+
+    if (digits.startsWith('00')) {
+        digits = digits.slice(2);
+    }
+
+    if (!digits.startsWith('55')) {
+        digits = `55${digits}`;
+    }
+
+    return `+${digits}`;
+};
+
 const bindCallEvents = (call: Call) => {
     call.on('accept', () => {
         softphoneStatus.value = 'in_call';
@@ -196,7 +210,7 @@ const recordBrowserCall = async () => {
             company_id: callForm.company_id,
             contact_id: callForm.contact_id,
             opportunity_id: callForm.opportunity_id || null,
-            to_address: callForm.to_address,
+            to_address: normalizeBrazilPhone(callForm.to_address),
             notes: callForm.notes,
             dial_mode: 'browser',
         },
@@ -219,9 +233,10 @@ const startBrowserCall = async () => {
         const device = await ensureDevice();
 
         softphoneStatus.value = 'dialing';
+        const to = normalizeBrazilPhone(callForm.to_address);
         const call = await device.connect({
             params: {
-                To: callForm.to_address,
+                To: to,
                 CallerId: callerId.value ?? '',
             },
         });
