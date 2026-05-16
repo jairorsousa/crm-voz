@@ -67,3 +67,4 @@ npm run build
 - `docs/MVP-ESCOPO.md`
 - `docs/AMBIENTE.md`
 - `docs/ETAPA-1-SETUP.md`
+- `docs/GUIA-PRODUCAO-UBUNTU.md`
