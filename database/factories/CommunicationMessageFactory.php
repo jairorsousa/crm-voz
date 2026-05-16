@@ -39,9 +39,9 @@ class CommunicationMessageFactory extends Factory
             'status' => CommunicationStatus::Queued,
             'origin' => CommunicationOrigin::Manual,
             'provider' => 'mail',
-            'to_address' => fake()->safeEmail(),
-            'subject' => fake()->sentence(5),
-            'body' => fake()->paragraph(),
+            'to_address' => $this->faker->safeEmail(),
+            'subject' => $this->faker->sentence(5),
+            'body' => $this->faker->paragraph(),
             'queued_at' => now(),
         ];
     }

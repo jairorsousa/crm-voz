@@ -20,13 +20,13 @@ class CommunicationTemplateFactory extends Factory
      */
     public function definition(): array
     {
-        $channel = fake()->randomElement([CommunicationChannel::Email, CommunicationChannel::Whatsapp]);
+        $channel = $this->faker->randomElement([CommunicationChannel::Email, CommunicationChannel::Whatsapp]);
 
         return [
             'channel' => $channel,
-            'name' => fake()->words(3, true),
-            'subject' => $channel === CommunicationChannel::Email ? fake()->sentence(5) : null,
-            'body' => fake()->paragraph(),
+            'name' => $this->faker->words(3, true),
+            'subject' => $channel === CommunicationChannel::Email ? $this->faker->sentence(5) : null,
+            'body' => $this->faker->paragraph(),
             'is_active' => true,
         ];
     }

@@ -23,17 +23,17 @@ class ContactFactory extends Factory
     {
         return [
             'company_id' => Company::factory(),
-            'name' => fake()->name(),
-            'position' => fake()->jobTitle(),
-            'department' => fake()->randomElement(['Diretoria', 'Financeiro', 'Operações', 'Comercial', 'TI']),
-            'email' => fake()->safeEmail(),
-            'phone' => fake()->numerify('##########'),
-            'whatsapp' => fake()->numerify('###########'),
-            'linkedin_url' => fake()->optional()->url(),
-            'type' => fake()->randomElement(ContactType::cases()),
+            'name' => $this->faker->name(),
+            'position' => $this->faker->jobTitle(),
+            'department' => $this->faker->randomElement(['Diretoria', 'Financeiro', 'Operações', 'Comercial', 'TI']),
+            'email' => $this->faker->safeEmail(),
+            'phone' => $this->faker->numerify('##########'),
+            'whatsapp' => $this->faker->numerify('###########'),
+            'linkedin_url' => $this->faker->optional()->url(),
+            'type' => $this->faker->randomElement(ContactType::cases()),
             'is_primary' => false,
             'receives_automations' => true,
-            'notes' => fake()->optional()->sentence(),
+            'notes' => $this->faker->optional()->sentence(),
         ];
     }
 

@@ -19,14 +19,14 @@ class CommunicationChannelFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => fake()->words(2, true),
+            'name' => $this->faker->words(2, true),
             'type' => CommunicationChannelType::Email,
             'provider' => 'smtp',
             'config' => [
                 'host' => '127.0.0.1',
                 'port' => 1025,
-                'from_address' => fake()->safeEmail(),
-                'from_name' => fake()->company(),
+                'from_address' => $this->faker->safeEmail(),
+                'from_name' => $this->faker->company(),
             ],
             'is_active' => true,
             'is_shared' => false,

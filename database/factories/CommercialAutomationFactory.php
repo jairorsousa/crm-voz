@@ -22,8 +22,8 @@ class CommercialAutomationFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => fake()->sentence(3),
-            'description' => fake()->sentence(),
+            'name' => $this->faker->sentence(3),
+            'description' => $this->faker->sentence(),
             'trigger' => AutomationTrigger::OpportunityStageChanged,
             'conditions' => [],
             'actions' => [

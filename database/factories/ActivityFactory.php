@@ -30,17 +30,17 @@ class ActivityFactory extends Factory
             'opportunity_id' => null,
             'assigned_to_user_id' => User::factory(),
             'created_by_user_id' => User::factory(),
-            'type' => fake()->randomElement(ActivityType::cases()),
+            'type' => $this->faker->randomElement(ActivityType::cases()),
             'status' => ActivityStatus::Pending,
-            'priority' => fake()->randomElement(PriorityLevel::cases()),
-            'title' => fake()->randomElement([
+            'priority' => $this->faker->randomElement(PriorityLevel::cases()),
+            'title' => $this->faker->randomElement([
                 'Ligar para decisor',
                 'Enviar follow-up',
                 'Agendar reunião',
                 'Revisar proposta',
             ]),
-            'description' => fake()->optional()->sentence(),
-            'due_at' => fake()->dateTimeBetween('-2 days', '+10 days'),
+            'description' => $this->faker->optional()->sentence(),
+            'due_at' => $this->faker->dateTimeBetween('-2 days', '+10 days'),
         ];
     }
 
