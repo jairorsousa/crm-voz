@@ -235,6 +235,10 @@ const startBrowserCall = async () => {
         softphoneStatus.value = 'dialing';
         const to = normalizeBrazilPhone(callForm.to_address);
         const call = await device.connect({
+            rtcConstraints: {
+                audio: true,
+                video: false,
+            },
             params: {
                 To: to,
                 CallerId: callerId.value ?? '',
