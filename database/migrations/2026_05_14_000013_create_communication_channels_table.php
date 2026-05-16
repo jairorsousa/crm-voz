@@ -30,8 +30,8 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->timestamps();
 
-            $table->unique(['communication_channel_id', 'user_id']);
-            $table->index(['user_id', 'communication_channel_id']);
+            $table->unique(['communication_channel_id', 'user_id'], 'channel_user_unique');
+            $table->index(['user_id', 'communication_channel_id'], 'channel_user_user_channel_index');
         });
 
         Schema::table('communication_messages', function (Blueprint $table): void {
