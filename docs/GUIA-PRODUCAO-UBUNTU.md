@@ -1,6 +1,6 @@
 # Guia de Produção Ubuntu — VOZ CRM
 
-Este guia descreve um caminho recomendado para subir o VOZ CRM em um servidor Ubuntu usando Docker Compose para a aplicação, Nginx, Redis, filas, Horizon e Scheduler. O MySQL continua fora do Docker, conforme decisão do projeto.
+Este guia descreve um caminho recomendado para subir o VOZ CRM em um servidor Ubuntu usando Docker Compose para a aplicação, Nginx, Redis, filas, Horizon e Scheduler. O MySQL será remoto/via host e não ficará neste servidor.
 
 ## 1. Arquitetura Recomendada
 
@@ -8,11 +8,10 @@ Serviços no servidor:
 
 - Ubuntu 22.04 ou 24.04 LTS.
 - Docker e Docker Compose plugin.
-- Nginx no host para HTTPS e proxy reverso.
-- Certbot para SSL.
-- MySQL fora do Docker, podendo ser:
-  - instalado no próprio Ubuntu;
-  - ou um banco gerenciado/remoto.
+- Nginx no host como proxy reverso local.
+- Cloudflare na frente da aplicação, gerenciando proxy e certificados.
+- Domínio de produção: `crm.grupovoz.dev.br`.
+- MySQL remoto/via host, fora deste servidor.
 - Containers do projeto:
   - `nginx`: Nginx interno da aplicação;
   - `app`: PHP-FPM Laravel;
@@ -30,7 +29,7 @@ Atualize o Ubuntu:
 ```bash
 sudo apt update
 sudo apt upgrade -y
-sudo apt install -y ca-certificates curl git unzip ufw nginx certbot python3-certbot-nginx
+sudo apt install -y ca-certificates curl git unzip ufw nginx
 ```
 
 Instale Docker:
@@ -65,40 +64,28 @@ sudo ufw allow 'Nginx Full'
 sudo ufw enable
 ```
 
-## 3. Preparar MySQL
+## 3. Preparar MySQL Remoto
 
-Se o MySQL estiver no próprio servidor Ubuntu, instale:
+O MySQL não será instalado neste servidor. Use os dados do banco remoto fornecidos pelo host/provedor.
 
-```bash
-sudo apt install -y mysql-server
-sudo mysql_secure_installation
-```
-
-Crie banco e usuário:
-
-```bash
-sudo mysql
-```
-
-```sql
-CREATE DATABASE voz_crm CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER 'voz_crm'@'%' IDENTIFIED BY 'troque-esta-senha';
-GRANT ALL PRIVILEGES ON voz_crm.* TO 'voz_crm'@'%';
-FLUSH PRIVILEGES;
-EXIT;
-```
-
-Se o MySQL estiver no mesmo host e a aplicação estiver em Docker, use no `.env`:
+No `.env`, configure:
 
 ```dotenv
-DB_HOST=host.docker.internal
+DB_CONNECTION=mysql
+DB_HOST=host-do-mysql
 DB_PORT=3306
 DB_DATABASE=voz_crm
 DB_USERNAME=voz_crm
-DB_PASSWORD=troque-esta-senha
+DB_PASSWORD=senha-do-banco
 ```
 
-Se o banco for remoto, use o host real fornecido pelo provedor.
+Teste a conexão do servidor com o banco remoto antes de rodar migrations:
+
+```bash
+docker compose run --rm app php artisan migrate:status
+```
+
+Se o banco remoto exigir whitelist de IP, libere o IP público do servidor Ubuntu no painel do provedor.
 
 ## 4. Baixar o Projeto
 
@@ -138,16 +125,16 @@ Valores mínimos para produção:
 APP_NAME="VOZ CRM"
 APP_ENV=production
 APP_DEBUG=false
-APP_URL=https://crm.seudominio.com
+APP_URL=https://crm.grupovoz.dev.br
 APP_PORT=8080
 APP_TIMEZONE=America/Sao_Paulo
 
 DB_CONNECTION=mysql
-DB_HOST=host.docker.internal
+DB_HOST=host-do-mysql
 DB_PORT=3306
 DB_DATABASE=voz_crm
 DB_USERNAME=voz_crm
-DB_PASSWORD=troque-esta-senha
+DB_PASSWORD=senha-do-banco
 
 CACHE_STORE=redis
 SESSION_DRIVER=redis
@@ -164,11 +151,11 @@ MAIL_PORT=587
 MAIL_USERNAME=usuario-smtp
 MAIL_PASSWORD=senha-smtp
 MAIL_ENCRYPTION=tls
-MAIL_FROM_ADDRESS=crm@seudominio.com
+MAIL_FROM_ADDRESS=crm@grupovoz.dev.br
 MAIL_FROM_NAME="${APP_NAME}"
 
 SEED_USER_NAME="Administrador VOZ"
-SEED_USER_EMAIL=admin@seudominio.com
+SEED_USER_EMAIL=admin@grupovoz.dev.br
 SEED_USER_PASSWORD=troque-esta-senha-inicial
 ```
 
@@ -258,7 +245,27 @@ Teste localmente no servidor:
 curl -I http://127.0.0.1:8080
 ```
 
-## 8. Nginx do Host com HTTPS
+## 8. Nginx do Host Atrás da Cloudflare
+
+A aplicação ficará atrás do proxy da Cloudflare. Os certificados serão gerados pela Cloudflare, então este guia não usa Certbot.
+
+No painel da Cloudflare:
+
+1. Crie o registro DNS `crm.grupovoz.dev.br` apontando para o IP público do servidor Ubuntu.
+2. Ative o proxy da Cloudflare no registro.
+3. Em **SSL/TLS > Origin Server**, gere um **Origin Certificate** para `crm.grupovoz.dev.br`.
+4. Configure o modo SSL/TLS como **Full (strict)**.
+
+No servidor, crie os arquivos do certificado:
+
+```bash
+sudo mkdir -p /etc/ssl/cloudflare
+sudo nano /etc/ssl/cloudflare/crm.grupovoz.dev.br.pem
+sudo nano /etc/ssl/cloudflare/crm.grupovoz.dev.br.key
+sudo chmod 600 /etc/ssl/cloudflare/crm.grupovoz.dev.br.key
+```
+
+Cole o certificado no arquivo `.pem` e a chave privada no arquivo `.key`.
 
 Crie o arquivo:
 
@@ -271,7 +278,17 @@ Conteúdo:
 ```nginx
 server {
     listen 80;
-    server_name crm.seudominio.com;
+    server_name crm.grupovoz.dev.br;
+
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl http2;
+    server_name crm.grupovoz.dev.br;
+
+    ssl_certificate /etc/ssl/cloudflare/crm.grupovoz.dev.br.pem;
+    ssl_certificate_key /etc/ssl/cloudflare/crm.grupovoz.dev.br.key;
 
     client_max_body_size 32m;
 
@@ -281,7 +298,8 @@ server {
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-Proto https;
+        proxy_set_header CF-Connecting-IP $http_cf_connecting_ip;
     }
 }
 ```
@@ -294,16 +312,10 @@ sudo nginx -t
 sudo systemctl reload nginx
 ```
 
-Gere SSL:
-
-```bash
-sudo certbot --nginx -d crm.seudominio.com
-```
-
-Depois do SSL, confirme no `.env`:
+Depois, confirme no `.env`:
 
 ```dotenv
-APP_URL=https://crm.seudominio.com
+APP_URL=https://crm.grupovoz.dev.br
 ```
 
 E rode:
@@ -317,7 +329,7 @@ docker compose restart app queue horizon scheduler
 
 Depois de logar como administrador:
 
-1. Acesse `https://crm.seudominio.com/canais`.
+1. Acesse `https://crm.grupovoz.dev.br/canais`.
 2. Crie ou revise o canal de Ligação:
    - Tipo: Ligação;
    - Provedor: Twilio;
@@ -334,8 +346,8 @@ Depois de logar como administrador:
 Configure os webhooks nos provedores apontando para:
 
 ```txt
-https://crm.seudominio.com/webhooks/twilio/calls
-https://crm.seudominio.com/webhooks/evolution/whatsapp
+https://crm.grupovoz.dev.br/webhooks/twilio/calls
+https://crm.grupovoz.dev.br/webhooks/evolution/whatsapp
 ```
 
 Se usar token de webhook, envie no header:
@@ -388,7 +400,7 @@ sudo chown -R $USER:$USER /var/backups/voz-crm
 Backup manual:
 
 ```bash
-mysqldump -u voz_crm -p voz_crm | gzip > /var/backups/voz-crm/voz_crm_$(date +%F_%H-%M).sql.gz
+mysqldump -h host-do-mysql -P 3306 -u voz_crm -p voz_crm | gzip > /var/backups/voz-crm/voz_crm_$(date +%F_%H-%M).sql.gz
 ```
 
 Adicione ao `crontab`:
@@ -400,7 +412,7 @@ crontab -e
 Exemplo diário às 02:00:
 
 ```cron
-0 2 * * * mysqldump -u voz_crm -p'SUA_SENHA' voz_crm | gzip > /var/backups/voz-crm/voz_crm_$(date +\%F_\%H-\%M).sql.gz
+0 2 * * * mysqldump -h host-do-mysql -P 3306 -u voz_crm -p'SUA_SENHA' voz_crm | gzip > /var/backups/voz-crm/voz_crm_$(date +\%F_\%H-\%M).sql.gz
 ```
 
 Recomendações:
@@ -429,16 +441,18 @@ docker compose ps
 Horizon:
 
 ```txt
-https://crm.seudominio.com/horizon
+https://crm.grupovoz.dev.br/horizon
 ```
 
 Em produção, o Horizon permite acesso ao e-mail definido em `SEED_USER_EMAIL`.
 
 ## 13. Checklist Final
 
-- [ ] DNS do domínio aponta para o IP do servidor.
+- [ ] DNS `crm.grupovoz.dev.br` aponta para o IP do servidor.
+- [ ] Proxy da Cloudflare ativo.
+- [ ] Certificado gerenciado pela Cloudflare.
 - [ ] Docker e Docker Compose instalados.
-- [ ] MySQL criado e acessível.
+- [ ] MySQL remoto acessível pelo servidor.
 - [ ] `.env` configurado com `APP_ENV=production`.
 - [ ] `APP_DEBUG=false`.
 - [ ] `APP_KEY` gerada.
@@ -448,10 +462,8 @@ Em produção, o Horizon permite acesso ao e-mail definido em `SEED_USER_EMAIL`.
 - [ ] Seed inicial executado.
 - [ ] Containers `nginx`, `app`, `redis`, `queue`, `horizon` e `scheduler` ativos.
 - [ ] Nginx do host proxyando para `127.0.0.1:8080`.
-- [ ] SSL ativo com Certbot.
 - [ ] Canais de comunicação configurados.
 - [ ] Webhooks configurados.
 - [ ] Backup automático do MySQL configurado.
 - [ ] Login administrador testado.
 - [ ] Dashboard, empresas, pipeline, canais, automações e relatórios testados.
-
