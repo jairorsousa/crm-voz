@@ -319,6 +319,14 @@ Depois, confirme no `.env`:
 APP_URL=https://crm.grupovoz.dev.br
 ```
 
+Se a aplicação estiver publicada por Cloudflare Tunnel, o hostname público deve apontar para o serviço interno do Compose:
+
+```txt
+crm.grupovoz.dev.br -> http://nginx:80
+```
+
+O Laravel está configurado para confiar nos headers do proxy. Isso é necessário para evitar erro de mixed content, onde a tela abre em HTTPS mas o login tenta chamar `http://crm.grupovoz.dev.br/login`.
+
 E rode:
 
 ```bash
