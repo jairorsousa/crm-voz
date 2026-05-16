@@ -1,0 +1,103 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+    --colors-primary-g100: #fff0e0;
+    --colors-primary-g500: #ff6f00;
+    --colors-primary-g600: #e56300;
+
+    --colors-mono-white: #ffffff;
+    --colors-mono-black: #212427;
+    --colors-mono-g50: #f5f6f7;
+    --colors-mono-g100: #ecedef;
+    --colors-mono-g200: #d5d7da;
+    --colors-mono-g300: #b2b7bb;
+    --colors-mono-g400: #a0a6ad;
+    --colors-mono-g600: #8d959d;
+    --colors-mono-g900: #212529;
+
+    --colors-up: #15a96f;
+    --colors-up-bg: #e8f8f0;
+    --colors-down: #e43b3b;
+    --colors-down-bg: #fdeaea;
+    --colors-error: #ff4747;
+    --colors-success: #1cc97d;
+    --colors-success-bg: #e8f3ea;
+    --colors-info: #1a73e8;
+    --colors-info-bg: #e8f0fe;
+
+    --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.06);
+    --shadow-dropdown:
+        0 4px 20px hsla(0, 0%, 54%, 0.16), 0 4px 20px rgba(0, 0, 0, 0.1);
+    --shadow-elevated: 0 8px 32px rgba(0, 0, 0, 0.12);
+}
+
+[data-theme='dark'] {
+    --colors-primary-g100: #3d2800;
+    --colors-primary-g500: #ff8c33;
+    --colors-primary-g600: #ff6f00;
+
+    --colors-mono-white: #1a1d21;
+    --colors-mono-black: #f5f6f7;
+    --colors-mono-g50: #22262b;
+    --colors-mono-g100: #2c3138;
+    --colors-mono-g200: #3a4049;
+    --colors-mono-g300: #5a6370;
+    --colors-mono-g400: #77808c;
+    --colors-mono-g600: #9aa1a9;
+    --colors-mono-g900: #f0f1f3;
+
+    --colors-up: #22c77e;
+    --colors-up-bg: #162e22;
+    --colors-down: #ef5555;
+    --colors-down-bg: #3a1a1a;
+    --colors-error: #ff5c5c;
+    --colors-success: #22c77e;
+    --colors-success-bg: #162e22;
+    --colors-info: #4d9af5;
+    --colors-info-bg: #1a2a40;
+
+    --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.3);
+    --shadow-dropdown: 0 4px 20px rgba(0, 0, 0, 0.4);
+    --shadow-elevated: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+@layer base {
+    html {
+        color-scheme: light;
+    }
+
+    html[data-theme='dark'] {
+        color-scheme: dark;
+    }
+
+    body {
+        @apply bg-mono-50 font-sans text-mono-900 antialiased;
+    }
+
+    ::selection {
+        @apply bg-primary-100 text-primary-600;
+    }
+}
+
+@layer components {
+    .material-icons-outlined {
+        direction: ltr;
+        display: inline-block;
+        font-family: 'Material Icons Outlined';
+        font-feature-settings: 'liga';
+        font-style: normal;
+        font-weight: normal;
+        letter-spacing: normal;
+        line-height: 1;
+        text-transform: none;
+        white-space: nowrap;
+        word-wrap: normal;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    .jr-focus-ring {
+        @apply focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-mono-white;
+    }
+}
