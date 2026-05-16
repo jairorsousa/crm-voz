@@ -18,9 +18,9 @@ use App\Support\CRM\CommunicationTimeline;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use RuntimeException;
 use Inertia\Inertia;
 use Inertia\Response;
+use RuntimeException;
 
 class CallController extends Controller
 {
@@ -73,7 +73,7 @@ class CallController extends Controller
             'status' => CommunicationStatus::Queued,
             'origin' => CommunicationOrigin::Manual,
             'provider' => $channel->provider,
-            'from_address' => $channel->settings()['from_number'] ?? null,
+            'from_address' => $channel->settings()['caller_id'] ?? $channel->settings()['from_number'] ?? null,
             'queued_at' => now(),
         ]);
 

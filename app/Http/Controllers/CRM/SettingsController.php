@@ -123,6 +123,10 @@ class SettingsController extends Controller
             'twilio' => [
                 'account_sid' => ['nullable', 'string', 'max:180'],
                 'auth_token' => ['nullable', 'string', 'max:180'],
+                'api_key' => ['nullable', 'string', 'max:180'],
+                'api_secret' => ['nullable', 'string', 'max:180'],
+                'twiml_app_sid' => ['nullable', 'string', 'max:180'],
+                'caller_id' => ['nullable', 'string', 'max:40'],
                 'from_number' => ['nullable', 'string', 'max:40'],
                 'voice_webhook_url' => ['nullable', 'url', 'max:240'],
                 'webhook_token' => ['nullable', 'string', 'max:180'],
@@ -313,7 +317,7 @@ class SettingsController extends Controller
     private function sensitiveFieldsFor(string $integration): array
     {
         return match ($integration) {
-            'twilio' => ['auth_token', 'webhook_token'],
+            'twilio' => ['auth_token', 'api_secret', 'webhook_token'],
             'evolution' => ['key', 'webhook_token'],
             'mail' => ['password'],
             default => [],

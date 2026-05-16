@@ -192,7 +192,7 @@ class CommunicationChannelController extends Controller
     {
         $current = $channel->config;
 
-        foreach (['auth_token', 'webhook_token', 'key', 'password'] as $field) {
+        foreach (['auth_token', 'api_secret', 'webhook_token', 'key', 'password'] as $field) {
             if (blank($config[$field] ?? null) && filled($current[$field] ?? null)) {
                 $config[$field] = $current[$field];
             }

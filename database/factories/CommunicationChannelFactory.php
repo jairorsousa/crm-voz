@@ -42,6 +42,10 @@ class CommunicationChannelFactory extends Factory
             'config' => [
                 'account_sid' => null,
                 'auth_token' => null,
+                'api_key' => null,
+                'api_secret' => null,
+                'twiml_app_sid' => null,
+                'caller_id' => '+5511999999999',
                 'from_number' => '+5511999999999',
                 'voice_webhook_url' => 'https://voz.example.com/twilio',
                 'webhook_token' => null,

@@ -155,6 +155,14 @@ MAIL_ENCRYPTION=tls
 MAIL_FROM_ADDRESS=crm@grupovoz.dev.br
 MAIL_FROM_NAME="${APP_NAME}"
 
+TWILIO_ACCOUNT_SID=ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+TWILIO_AUTH_TOKEN=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+TWILIO_API_KEY=SKxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+TWILIO_API_SECRET=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+TWILIO_TWIML_APP_SID=APxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+TWILIO_CALLER_ID=+5511982403231
+TWILIO_WEBHOOK_TOKEN=troque-este-token
+
 SEED_USER_NAME="Administrador VOZ"
 SEED_USER_EMAIL=admin@grupovoz.dev.br
 SEED_USER_PASSWORD=troque-esta-senha-inicial

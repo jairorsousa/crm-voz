@@ -6,6 +6,7 @@ use App\Enums\CommunicationChannel;
 use App\Support\CRM\NormalizesCrmData;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
 
 class StoreCommunicationChannelRequest extends FormRequest
 {
@@ -44,8 +45,12 @@ class StoreCommunicationChannelRequest extends FormRequest
             'config' => ['array'],
             'config.account_sid' => ['nullable', 'required_if:provider,twilio', 'string', 'max:255'],
             'config.auth_token' => ['nullable', 'string', 'max:255'],
-            'config.from_number' => ['nullable', 'required_if:provider,twilio', 'string', 'max:30'],
-            'config.voice_webhook_url' => ['nullable', 'required_if:provider,twilio', 'url', 'max:255'],
+            'config.api_key' => ['nullable', 'string', 'max:255'],
+            'config.api_secret' => ['nullable', 'string', 'max:255'],
+            'config.twiml_app_sid' => ['nullable', 'string', 'max:255'],
+            'config.caller_id' => ['nullable', 'string', 'max:30'],
+            'config.from_number' => ['nullable', 'string', 'max:30'],
+            'config.voice_webhook_url' => ['nullable', 'url', 'max:255'],
             'config.webhook_token' => ['nullable', 'string', 'max:255'],
             'config.url' => ['nullable', 'required_if:provider,evolution', 'url', 'max:255'],
             'config.key' => ['nullable', 'string', 'max:255'],
@@ -58,6 +63,37 @@ class StoreCommunicationChannelRequest extends FormRequest
             'config.from_address' => ['nullable', 'required_if:provider,smtp', 'email', 'max:255'],
             'config.from_name' => ['nullable', 'string', 'max:255'],
         ];
+    }
+
+    public function withValidator(Validator $validator): void
+    {
+        $validator->after(function (Validator $validator): void {
+            if ($this->input('provider') !== 'twilio') {
+                return;
+            }
+
+            $config = $this->input('config', []);
+            $channel = $this->route('channel');
+            $currentConfig = $channel instanceof \App\Models\CommunicationChannel ? $channel->config : [];
+            $hasAuthToken = filled($config['auth_token'] ?? null);
+            $hasApiCredentials = (filled($config['api_key'] ?? null) || filled($currentConfig['api_key'] ?? null))
+                && (filled($config['api_secret'] ?? null) || filled($currentConfig['api_secret'] ?? null));
+            $hasCurrentAuthToken = filled($currentConfig['auth_token'] ?? null);
+            $hasCallerId = filled($config['caller_id'] ?? null) || filled($config['from_number'] ?? null) || filled($currentConfig['caller_id'] ?? null) || filled($currentConfig['from_number'] ?? null);
+            $hasVoiceRouting = filled($config['twiml_app_sid'] ?? null) || filled($config['voice_webhook_url'] ?? null) || filled($currentConfig['twiml_app_sid'] ?? null) || filled($currentConfig['voice_webhook_url'] ?? null);
+
+            if (! $hasAuthToken && ! $hasApiCredentials && ! $hasCurrentAuthToken) {
+                $validator->errors()->add('config.auth_token', 'Informe o Auth Token ou API Key + API Secret da Twilio.');
+            }
+
+            if (! $hasCallerId) {
+                $validator->errors()->add('config.caller_id', 'Informe o Caller ID/Número de origem da Twilio.');
+            }
+
+            if (! $hasVoiceRouting) {
+                $validator->errors()->add('config.twiml_app_sid', 'Informe o TwiML App SID ou a URL de voz da Twilio.');
+            }
+        });
     }
 
     /**

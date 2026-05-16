@@ -30,6 +30,13 @@ const form = useForm<CommunicationChannelFormData>({
     config: {
         account_sid: props.channel?.config?.account_sid ?? '',
         auth_token: '',
+        api_key: props.channel?.config?.api_key ?? '',
+        api_secret: '',
+        twiml_app_sid: props.channel?.config?.twiml_app_sid ?? '',
+        caller_id:
+            props.channel?.config?.caller_id ??
+            props.channel?.config?.from_number ??
+            '',
         from_number: props.channel?.config?.from_number ?? '',
         voice_webhook_url: props.channel?.config?.voice_webhook_url ?? '',
         webhook_token: '',
@@ -154,10 +161,28 @@ const submit = () => {
                             :error="form.errors['config.auth_token']"
                         />
                         <JrInput
-                            v-model="form.config.from_number"
-                            label="Número de origem"
+                            v-model="form.config.api_key"
+                            label="API Key SID"
+                            :error="form.errors['config.api_key']"
+                        />
+                        <JrInput
+                            v-model="form.config.api_secret"
+                            label="API Secret"
+                            type="password"
+                            :placeholder="isEditing ? 'Manter atual' : ''"
+                            :error="form.errors['config.api_secret']"
+                        />
+                        <JrInput
+                            v-model="form.config.twiml_app_sid"
+                            label="TwiML App SID"
+                            :error="form.errors['config.twiml_app_sid']"
+                        />
+                        <JrInput
+                            v-model="form.config.caller_id"
+                            label="Caller ID"
                             icon="phone"
-                            :error="form.errors['config.from_number']"
+                            placeholder="+5511982403231"
+                            :error="form.errors['config.caller_id']"
                             required
                         />
                         <JrInput
@@ -165,7 +190,6 @@ const submit = () => {
                             label="URL de voz"
                             icon="link"
                             :error="form.errors['config.voice_webhook_url']"
-                            required
                         />
                         <JrInput
                             v-model="form.config.webhook_token"

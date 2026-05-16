@@ -28,23 +28,32 @@ class StartTwilioCall implements ShouldQueue
         try {
             $settings = $message->communicationChannel?->settings() ?? IntegrationSettings::twilio();
             $sid = (string) $settings['account_sid'];
-            $token = (string) $settings['auth_token'];
-            $from = (string) $settings['from_number'];
-            $webhookUrl = (string) $settings['voice_webhook_url'];
+            $authUser = (string) (($settings['api_key'] ?? null) ?: $sid);
+            $authSecret = (string) (($settings['api_secret'] ?? null) ?: ($settings['auth_token'] ?? null));
+            $from = (string) (($settings['caller_id'] ?? null) ?: ($settings['from_number'] ?? null));
+            $webhookUrl = (string) ($settings['voice_webhook_url'] ?? '');
+            $twimlAppSid = (string) ($settings['twiml_app_sid'] ?? '');
 
-            if (blank($sid) || blank($token) || blank($from) || blank($webhookUrl)) {
-                throw new RuntimeException('Twilio não configurado. Verifique TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_FROM_NUMBER e TWILIO_VOICE_WEBHOOK_URL.');
+            if (blank($sid) || blank($authUser) || blank($authSecret) || blank($from) || (blank($webhookUrl) && blank($twimlAppSid))) {
+                throw new RuntimeException('Twilio não configurado. Verifique Account SID, credenciais, Caller ID e URL de voz ou TwiML App SID.');
+            }
+
+            $payload = [
+                'From' => $from,
+                'To' => $message->to_address,
+                'StatusCallback' => route('webhooks.twilio.calls'),
+                'StatusCallbackEvent' => 'initiated ringing answered completed',
+            ];
+
+            if (filled($twimlAppSid)) {
+                $payload['ApplicationSid'] = $twimlAppSid;
+            } else {
+                $payload['Url'] = $webhookUrl;
             }
 
             $response = Http::asForm()
-                ->withBasicAuth($sid, $token)
-                ->post("https://api.twilio.com/2010-04-01/Accounts/{$sid}/Calls.json", [
-                    'From' => $from,
-                    'To' => $message->to_address,
-                    'Url' => $webhookUrl,
-                    'StatusCallback' => route('webhooks.twilio.calls'),
-                    'StatusCallbackEvent' => 'initiated ringing answered completed',
-                ]);
+                ->withBasicAuth($authUser, $authSecret)
+                ->post("https://api.twilio.com/2010-04-01/Accounts/{$sid}/Calls.json", $payload);
 
             if ($response->failed()) {
                 throw new RuntimeException('Twilio retornou erro: '.$response->body());

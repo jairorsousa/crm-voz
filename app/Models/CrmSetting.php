@@ -12,7 +12,7 @@ class CrmSetting extends Model
      * @var array<string, list<string>>
      */
     private const SENSITIVE_FIELDS = [
-        'integrations.twilio' => ['auth_token', 'webhook_token'],
+        'integrations.twilio' => ['auth_token', 'api_secret', 'webhook_token'],
         'integrations.evolution' => ['key', 'webhook_token'],
         'integrations.mail' => ['password'],
     ];

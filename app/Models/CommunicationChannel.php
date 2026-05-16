@@ -21,7 +21,7 @@ class CommunicationChannel extends Model
      * @var array<string, list<string>>
      */
     private const SENSITIVE_FIELDS = [
-        'twilio' => ['auth_token', 'webhook_token'],
+        'twilio' => ['auth_token', 'api_secret', 'webhook_token'],
         'evolution' => ['key', 'webhook_token'],
         'smtp' => ['password'],
     ];

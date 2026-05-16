@@ -14,6 +14,10 @@ class IntegrationSettings
         return [
             'account_sid' => config('services.twilio.account_sid'),
             'auth_token' => config('services.twilio.auth_token'),
+            'api_key' => config('services.twilio.api_key'),
+            'api_secret' => config('services.twilio.api_secret'),
+            'twiml_app_sid' => config('services.twilio.twiml_app_sid'),
+            'caller_id' => config('services.twilio.caller_id'),
             'from_number' => config('services.twilio.from_number'),
             'voice_webhook_url' => config('services.twilio.voice_webhook_url'),
             'webhook_token' => config('services.twilio.webhook_token'),
