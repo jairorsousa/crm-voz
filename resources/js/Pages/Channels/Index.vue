@@ -190,7 +190,7 @@ const paginationLabel = (label: string) =>
                     v-for="link in channels.links"
                     :key="link.label"
                     :href="link.url ?? '#'"
-                    class="rounded-pill border px-3 py-2 text-sm font-semibold"
+                    class="rounded-lg border px-3 py-2 text-sm font-semibold"
                     :class="
                         link.active
                             ? 'border-primary-500 bg-primary-100 text-primary-600'

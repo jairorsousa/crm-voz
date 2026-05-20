@@ -46,7 +46,7 @@ const inputId = computed(() => props.id ?? generatedId);
             :placeholder="placeholder"
             :required="required"
             :disabled="disabled"
-            class="w-full rounded-2xl border bg-mono-white px-4 py-3 text-sm text-mono-900 placeholder:text-mono-300 focus:border-primary-500 focus:ring-primary-500 disabled:cursor-not-allowed disabled:opacity-60"
+            class="w-full rounded-lg border bg-mono-white px-4 py-3 text-sm text-mono-900 placeholder:text-mono-300 focus:border-primary-500 focus:ring-primary-500 disabled:cursor-not-allowed disabled:opacity-60"
             :class="error ? 'border-error' : 'border-mono-200'"
         />
         <p v-if="error" class="mt-2 text-xs font-medium text-error">

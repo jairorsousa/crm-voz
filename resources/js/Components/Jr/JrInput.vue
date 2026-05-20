@@ -47,7 +47,7 @@ const inputId = computed(() => props.id ?? generatedId);
         </label>
 
         <div
-            class="flex h-12 items-center gap-2 rounded-pill border bg-mono-white px-4 transition-all duration-200"
+            class="flex h-12 items-center gap-2 rounded-lg border bg-mono-white px-4 transition-all duration-200"
             :class="
                 error
                     ? 'border-error shadow-[0_0_0_3px_rgba(255,71,71,.1)]'

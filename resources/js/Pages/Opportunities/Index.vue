@@ -280,7 +280,7 @@ const paginationLabel = (label: string) =>
                 v-for="link in opportunities.links"
                 :key="link.label"
                 :href="link.url ?? '#'"
-                class="rounded-pill px-3 py-2 text-sm font-semibold"
+                class="rounded-lg px-3 py-2 text-sm font-semibold"
                 :class="[
                     link.active
                         ? 'bg-primary-500 text-white'

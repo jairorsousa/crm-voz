@@ -168,7 +168,7 @@ const visibleNavigation = computed(() =>
                     v-for="item in visibleNavigation"
                     :key="item.routeName"
                     :href="route(item.routeName)"
-                    class="group flex items-center gap-3 rounded-pill px-3 py-2.5 text-sm font-semibold transition-colors"
+                    class="group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold transition-colors"
                     :class="
                         route().current(item.routeName)
                             ? 'bg-primary-100 text-primary-600'

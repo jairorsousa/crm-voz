@@ -48,7 +48,7 @@ const sizeClasses = computed(() => {
         :href="href"
         :type="href ? undefined : type"
         :disabled="disabled"
-        class="jr-focus-ring inline-flex items-center justify-center gap-2 rounded-pill font-semibold transition-all duration-200 active:scale-[.97] disabled:cursor-not-allowed disabled:opacity-50"
+        class="jr-focus-ring inline-flex items-center justify-center gap-2 rounded-lg font-semibold transition-all duration-200 active:scale-[.97] disabled:cursor-not-allowed disabled:opacity-50"
         :class="[variantClasses, sizeClasses]"
     >
         <span v-if="icon" class="material-icons-outlined text-[18px]">

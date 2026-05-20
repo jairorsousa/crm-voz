@@ -43,7 +43,7 @@
 ### Principios de Design
 
 - **Limpo e Moderno**: Interface sem poluicao visual, com espacos generosos
-- **Pill-shaped**: Inputs, botoes e badges usam arredondamento maximo (`rounded-pill` / `999px`)
+- **Arredondamento sutil**: Inputs, selects e botoes usam raio moderno de 8px (`rounded-lg`), evitando o visual pill. Badges, avatares e indicadores podem manter `rounded-pill`.
 - **Laranja como Identidade**: A cor primaria `#ff6f00` e usada como acento, nunca dominando a tela
 - **Monocromatico como Base**: A escala de cinzas `mono-*` cria hierarquia sem distracao
 - **Consistencia**: Todos os componentes seguem o mesmo vocabulario visual
@@ -230,13 +230,13 @@ fontFamily: {
 | Token         | Valor     | CSS Variable     | Tailwind         | Uso                          |
 |--------------|-----------|------------------|------------------|------------------------------|
 | xs           | `4px`     | `--radius-xs`    | `rounded`        | Pouquissimo uso              |
-| sm           | `8px`     | `--radius-sm`    | `rounded-lg`     | Botoes pequenos, close btn   |
-| md           | `12px`    | `--radius-md`    | `rounded-xl`     | Inputs inline, dropdowns     |
+| sm           | `8px`     | `--radius-sm`    | `rounded-lg`     | **Inputs, selects, botoes, filtros** |
+| md           | `12px`    | `--radius-md`    | `rounded-xl`     | Dropdowns, navegacao, icon boxes |
 | lg           | `16px`    | `--radius-lg`    | `rounded-2xl`    | Cards, modais, tabelas       |
 | xl           | `20px`    | `--radius-xl`    | `rounded-3xl`    | Cards especiais (empty state)|
-| pill         | `999px`   | `--radius-pill`  | `rounded-pill`   | **Inputs, botoes, badges, select** |
+| pill         | `999px`   | `--radius-pill`  | `rounded-pill`   | Badges, avatares, barras/indicadores |
 
-> **Regra principal:** Inputs (`<x-jr.input>`), botoes (`<x-jr.button>`) e badges (`<x-jr.badge>`) SEMPRE usam `rounded-pill`. Cards, modais e tabelas usam `rounded-2xl`.
+> **Regra principal:** Inputs (`<x-jr.input>`), selects (`<x-jr.select>`), textareas (`<x-jr.textarea>`) e botoes (`<x-jr.button>`) usam `rounded-lg` para um raio sutil de 8px. Badges, avatares e indicadores podem usar `rounded-pill`. Cards, modais e tabelas usam `rounded-2xl`.
 
 ### Tailwind Config
 
@@ -422,7 +422,7 @@ Todos os componentes reutilizaveis ficam em `resources/views/components/jr/` e s
 | href     | string   | `null`      | URL (renderiza como `<a>`)                  |
 
 **Caracteristicas:**
-- Sempre `rounded-pill`
+- Sempre `rounded-lg`
 - `active:scale-[.97]` para micro-interacao
 - `transition-all duration-200`
 - `disabled:opacity-50 disabled:cursor-not-allowed`
@@ -476,7 +476,7 @@ Todos os componentes reutilizaveis ficam em `resources/views/components/jr/` e s
 | type   | string   | `text`   | Tipo do input                    |
 
 **Caracteristicas:**
-- Container com `rounded-pill` e `h-12`
+- Container com `rounded-lg` e `h-12`
 - Focus: `border-primary-500` + `shadow-[0_0_0_3px_rgba(255,111,0,.1)]`
 - Erro: `border-error` + icone `error`
 - Sucesso: `border-success` + icone `check_circle`
@@ -778,7 +778,7 @@ Para modais controlados por Livewire, o padrao e usar condicionais `@if($showMod
 **Botoes do Header:**
 ```html
 <!-- Circular -->
-<button class="relative p-2 rounded-full text-mono-600 hover:bg-mono-50 transition-colors">
+<button class="relative p-2 rounded-lg text-mono-600 hover:bg-mono-50 transition-colors">
     <span class="material-icons-outlined text-[22px]">icon</span>
 </button>
 ```
@@ -866,7 +866,7 @@ Variante com icone a esquerda:
             <x-jr.input wire:model.live.debounce.300ms="search" placeholder="Buscar..." icon="search" />
         </div>
         <select wire:model.live="filter"
-                class="h-12 px-4 rounded-pill border border-mono-200 bg-mono-white text-sm text-mono-900 focus:border-primary-500 focus:ring-1 focus:ring-primary-500">
+                class="h-12 px-4 rounded-lg border border-mono-200 bg-mono-white text-sm text-mono-900 focus:border-primary-500 focus:ring-1 focus:ring-primary-500">
             <option value="">Todos</option>
         </select>
     </div>
@@ -1000,7 +1000,7 @@ Selects usados em filtros (sem componente Blade):
 
 ```html
 <select wire:model.live="filter"
-        class="h-12 px-4 rounded-pill border border-mono-200 bg-mono-white text-sm text-mono-900 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-colors">
+        class="h-12 px-4 rounded-lg border border-mono-200 bg-mono-white text-sm text-mono-900 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-colors">
     <option value="">Todos</option>
 </select>
 ```
@@ -1429,7 +1429,8 @@ text-mono-400          → Meta info, timestamps
 bg-primary-500         → Botoes, links, acento
 bg-primary-100         → Hover sidebar ativo, background leve
 text-primary-500       → Links, texto primario
-rounded-pill           → Inputs, botoes, badges
+rounded-lg             → Inputs, selects, botoes, filtros
+rounded-pill           → Badges, avatares, indicadores
 rounded-2xl            → Cards, modais, dropdowns
 rounded-xl             → Botoes internos, icon boxes
 shadow-card            → Cards padrao

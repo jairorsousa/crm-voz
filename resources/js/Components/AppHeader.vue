@@ -43,7 +43,7 @@ const { theme, toggleTheme } = useTheme();
         <div class="flex items-center gap-2">
             <button
                 type="button"
-                class="jr-focus-ring flex h-10 w-10 items-center justify-center rounded-pill text-mono-600 hover:bg-mono-50"
+                class="jr-focus-ring flex h-10 w-10 items-center justify-center rounded-lg text-mono-600 hover:bg-mono-50"
                 :title="
                     theme === 'dark'
                         ? 'Ativar tema claro'
@@ -60,7 +60,7 @@ const { theme, toggleTheme } = useTheme();
                 <template #trigger>
                     <button
                         type="button"
-                        class="jr-focus-ring flex items-center gap-3 rounded-pill px-2 py-1.5 hover:bg-mono-50"
+                        class="jr-focus-ring flex items-center gap-3 rounded-lg px-2 py-1.5 hover:bg-mono-50"
                     >
                         <JrAvatar :name="page.props.auth.user?.name ?? 'VOZ'" />
                         <span class="hidden text-left sm:block">
