@@ -32,6 +32,11 @@ class UserPolicy
         return true;
     }
 
+    public function viewProducts(User $user): bool
+    {
+        return $user->role?->canManage() ?? false;
+    }
+
     public function viewActivities(User $user): bool
     {
         return true;

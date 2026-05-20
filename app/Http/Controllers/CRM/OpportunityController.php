@@ -10,6 +10,7 @@ use App\Models\Company;
 use App\Models\Contact;
 use App\Models\Opportunity;
 use App\Models\PipelineStage;
+use App\Models\Product;
 use App\Models\User;
 use App\Support\CRM\CrmOptions;
 use App\Support\CRM\FormatsCrmData;
@@ -72,6 +73,9 @@ class OpportunityController extends Controller
     public function store(StoreOpportunityRequest $request): RedirectResponse
     {
         $validated = $request->validated();
+        $productIds = $validated['product_ids'] ?? [];
+        unset($validated['product_ids']);
+
         abort_unless(Company::query()->visibleTo($request->user())->whereKey($validated['company_id'])->exists(), 403);
 
         if (! $request->user()->role?->canManage()) {
@@ -84,6 +88,7 @@ class OpportunityController extends Controller
             'status' => $this->statusForStage($stage),
             'last_stage_changed_at' => now(),
         ]);
+        $opportunity->products()->sync($productIds);
 
         Timeline::record(
             company: $opportunity->company,
@@ -116,6 +121,9 @@ class OpportunityController extends Controller
     {
         $this->authorizeOpportunity($opportunity);
         $validated = $request->validated();
+        $productIds = $validated['product_ids'] ?? [];
+        unset($validated['product_ids']);
+
         abort_unless(Company::query()->visibleTo($request->user())->whereKey($validated['company_id'])->exists(), 403);
 
         if (! $request->user()->role?->canManage()) {
@@ -130,6 +138,7 @@ class OpportunityController extends Controller
             'status' => $this->statusForStage($stage),
             'last_stage_changed_at' => $oldStageId === $stage->id ? $opportunity->last_stage_changed_at : now(),
         ]);
+        $opportunity->products()->sync($productIds);
 
         Timeline::record(
             company: $opportunity->company,
@@ -199,6 +208,16 @@ class OpportunityController extends Controller
                     'value' => $user->id,
                     'label' => $user->name,
                     'description' => $user->email,
+                ]),
+            'products' => Product::query()
+                ->active()
+                ->orderBy('sort_order')
+                ->orderBy('name')
+                ->get(['id', 'name', 'category', 'base_price'])
+                ->map(fn (Product $product): array => [
+                    'value' => $product->id,
+                    'label' => $product->name,
+                    'description' => collect([$product->category, $product->base_price ? FormatsCrmData::money($product->base_price) : null])->filter()->join(' · '),
                 ]),
             'sources' => Opportunity::query()
                 ->visibleTo(request()->user())
@@ -274,6 +293,7 @@ class OpportunityController extends Controller
             'expected_close_date' => $opportunity->expected_close_date?->toDateString(),
             'source' => $opportunity->source,
             'products_interests' => $opportunity->products_interests,
+            'product_ids' => $opportunity->products()->pluck('products.id')->all(),
             'notes' => $opportunity->notes,
             'lost_reason' => $opportunity->lost_reason,
             'closed_value' => $opportunity->closed_value,

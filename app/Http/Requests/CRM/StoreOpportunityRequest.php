@@ -25,6 +25,7 @@ class StoreOpportunityRequest extends FormRequest
             'products_interests' => $this->normalizeNullableText($this->input('products_interests')),
             'notes' => $this->normalizeNullableText($this->input('notes')),
             'lost_reason' => $this->normalizeNullableText($this->input('lost_reason')),
+            'product_ids' => collect($this->input('product_ids', []))->filter()->values()->all(),
         ]);
     }
 
@@ -49,6 +50,8 @@ class StoreOpportunityRequest extends FormRequest
             'expected_close_date' => ['nullable', 'date'],
             'source' => ['nullable', 'string', 'max:255'],
             'products_interests' => ['nullable', 'string', 'max:5000'],
+            'product_ids' => ['array'],
+            'product_ids.*' => ['integer', 'exists:products,id'],
             'notes' => ['nullable', 'string', 'max:5000'],
             'lost_reason' => ['nullable', 'required_if_stage_lost:pipeline_stage_id', 'string', 'max:5000'],
             'closed_value' => ['nullable', 'required_if_stage_won:pipeline_stage_id', 'numeric', 'min:0', 'max:999999999999.99'],

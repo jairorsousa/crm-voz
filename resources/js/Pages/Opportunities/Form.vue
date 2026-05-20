@@ -36,6 +36,7 @@ const form = useForm<OpportunityFormData>({
     expected_close_date: props.opportunity?.expected_close_date ?? '',
     source: props.opportunity?.source ?? '',
     products_interests: props.opportunity?.products_interests ?? '',
+    product_ids: props.opportunity?.product_ids ?? [],
     notes: props.opportunity?.notes ?? '',
     lost_reason: props.opportunity?.lost_reason ?? '',
     closed_value: props.opportunity?.closed_value ?? '',
@@ -55,6 +56,15 @@ const contactOptions = computed<Option[]>(() =>
             String(contact.company_id) === String(form.company_id),
     ),
 );
+
+const toggleProduct = (id: string | number | null) => {
+    if (!id) return;
+
+    const productId = Number(id);
+    form.product_ids = form.product_ids.includes(productId)
+        ? form.product_ids.filter((item) => item !== productId)
+        : [...form.product_ids, productId];
+};
 
 const submit = () => {
     if (isEdit.value && props.opportunity?.id) {
@@ -164,9 +174,50 @@ const submit = () => {
                     <JrTextarea
                         v-model="form.products_interests"
                         class="lg:col-span-3"
-                        label="Produtos ou serviços de interesse"
+                        label="Observações sobre produtos ou serviços"
                         :error="form.errors.products_interests"
                     />
+                    <div class="lg:col-span-3">
+                        <p class="mb-2 text-sm font-semibold text-mono-700">
+                            Produtos vinculados
+                        </p>
+                        <div
+                            v-if="options.products?.length"
+                            class="grid gap-2 md:grid-cols-2 xl:grid-cols-3"
+                        >
+                            <button
+                                v-for="product in options.products"
+                                :key="String(product.value)"
+                                type="button"
+                                class="rounded-lg border px-3 py-2 text-left transition"
+                                :class="
+                                    form.product_ids.includes(Number(product.value))
+                                        ? 'border-primary-500 bg-primary-50 text-primary-700'
+                                        : 'border-mono-200 bg-white text-mono-700 hover:border-primary-300'
+                                "
+                                @click="toggleProduct(product.value)"
+                            >
+                                <span class="block text-sm font-bold">
+                                    {{ product.label }}
+                                </span>
+                                <span
+                                    v-if="product.description"
+                                    class="mt-1 block text-xs text-mono-500"
+                                >
+                                    {{ product.description }}
+                                </span>
+                            </button>
+                        </div>
+                        <p v-else class="text-sm text-mono-500">
+                            Cadastre produtos para vincular oportunidades.
+                        </p>
+                        <p
+                            v-if="form.errors.product_ids"
+                            class="mt-1 text-sm text-error"
+                        >
+                            {{ form.errors.product_ids }}
+                        </p>
+                    </div>
                     <JrTextarea
                         v-model="form.notes"
                         class="lg:col-span-3"

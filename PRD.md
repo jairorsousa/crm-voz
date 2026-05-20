@@ -107,6 +107,7 @@ A estrutura principal do sistema será composta por:
 
 - Empresas;
 - Contatos vinculados à empresa;
+- Produtos e serviços;
 - Oportunidades/Negócios;
 - Pipeline comercial;
 - Atividades e tarefas;
@@ -118,6 +119,24 @@ A estrutura principal do sistema será composta por:
 - Dashboard;
 - Usuários e permissões;
 - Histórico centralizado.
+
+---
+
+## 5.1 Módulo de Produtos e Serviços
+
+O CRM deverá permitir o cadastro de produtos e serviços comercializados pela VOZ para padronizar o que é negociado nas oportunidades.
+
+Cada produto/serviço deverá conter:
+
+- Nome;
+- Identificador;
+- Categoria;
+- Descrição;
+- Preço base opcional;
+- Status ativo/inativo;
+- Ordem de exibição.
+
+As oportunidades poderão ser vinculadas a um ou mais produtos/serviços. O campo textual de produtos/serviços de interesse permanece disponível para observações comerciais livres.
 
 ---
 

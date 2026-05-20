@@ -311,7 +311,7 @@ Entregas:
 - [x] Criar layout autenticado com sidebar, header e dark mode.
 - [x] Criar layout guest para login.
 - [x] Implementar login, logout, recuperacao de senha e protecao de rotas.
-- [x] Criar menus principais: Dashboard, Empresas, Contatos, Pipeline, Oportunidades, Atividades, Ligacoes, E-mails, WhatsApp, Canais, Automacoes, Relatorios e Configuracoes.
+- [x] Criar menus principais: Dashboard, Empresas, Contatos, Pipeline, Oportunidades, Produtos, Atividades, Ligacoes, E-mails, WhatsApp, Canais, Automacoes, Relatorios e Configuracoes.
 - [x] Criar perfis: Administrador, Gestor Comercial, SDR e Closer.
 - [x] Criar policies iniciais.
 
@@ -382,12 +382,31 @@ Entregas:
 - [x] Modal obrigatorio para motivo de perda.
 - [x] Modal obrigatorio para dados minimos de ganho.
 - [x] Registro de ultima movimentacao.
+- [x] Cadastro de Produtos e Servicos.
+- [x] Vinculo de multiplos produtos em oportunidades.
+- [x] Campo livre de observacao sobre produtos mantido para contexto comercial.
 
 Criterios de aceite:
 
 - [x] Toda oportunidade pertence a uma empresa.
 - [x] Movimentar card atualiza etapa e registra historico.
 - [x] Pipeline funciona bem com muitas oportunidades via paginacao/carga por etapa.
+- [x] Gestores podem gerenciar produtos e oportunidades podem selecionar produtos ativos.
+
+### Etapa 4.1 — Produtos e Servicos
+
+Status: implementada.
+
+Objetivo: transformar produtos/servicos de interesse em uma entidade propria para padronizar negociacoes e relatorios futuros.
+
+Entregas:
+
+- [x] Migration, model, factory e seed inicial de produtos.
+- [x] CRUD de produtos com nome, slug, categoria, descricao, preco base, status e ordenacao.
+- [x] Menu lateral `Produtos` para administradores e gestores comerciais.
+- [x] Vinculo N:N entre oportunidades e produtos.
+- [x] Seletor de produtos no formulario de oportunidade.
+- [x] Campo textual `products_interests` mantido como observacao livre.
 - [x] Fechado ganho/perdido exige dados especificos.
 
 ### Etapa 5 — Historico Centralizado e Atividades

@@ -13,6 +13,7 @@ use App\Http\Controllers\CRM\DashboardController;
 use App\Http\Controllers\CRM\EmailCommunicationController;
 use App\Http\Controllers\CRM\OpportunityController;
 use App\Http\Controllers\CRM\PipelineController;
+use App\Http\Controllers\CRM\ProductController;
 use App\Http\Controllers\CRM\ReportController;
 use App\Http\Controllers\CRM\SettingsController;
 use App\Http\Controllers\CRM\WhatsappCommunicationController;
@@ -64,6 +65,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->except('show')
         ->names('opportunities')
         ->middleware('can:viewOpportunities,'.User::class);
+
+    Route::resource('/produtos', ProductController::class)
+        ->parameters(['produtos' => 'product'])
+        ->except('show', 'destroy')
+        ->names('products')
+        ->middleware('can:viewProducts,'.User::class);
+    Route::patch('/produtos/{product}/alternar', [ProductController::class, 'toggle'])
+        ->can('viewProducts', User::class)
+        ->name('products.toggle');
 
     Route::resource('/atividades', ActivityController::class)
         ->parameters(['atividades' => 'activity'])

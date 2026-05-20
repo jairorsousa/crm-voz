@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Opportunity extends Model
@@ -92,6 +93,11 @@ class Opportunity extends Model
     public function communicationMessages(): HasMany
     {
         return $this->hasMany(CommunicationMessage::class);
+    }
+
+    public function products(): BelongsToMany
+    {
+        return $this->belongsToMany(Product::class)->withTimestamps();
     }
 
     public function scopeSearch(Builder $query, ?string $search): Builder

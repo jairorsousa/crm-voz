@@ -49,6 +49,7 @@ export type CrmOptions = {
     contacts?: Option[];
     opportunities?: Option[];
     stages?: Option[];
+    products?: Option[];
     templates?: Option[];
     channels?: Option[];
     segments?: string[];
@@ -294,10 +295,24 @@ export type OpportunityFormData = {
     expected_close_date: string | null;
     source: string | null;
     products_interests: string | null;
+    product_ids: number[];
     notes: string | null;
     lost_reason: string | null;
     closed_value: string | number | null;
     closed_at: string | null;
+};
+
+export type ProductFormData = {
+    id?: number;
+    name: string;
+    slug: string;
+    category: string | null;
+    description: string | null;
+    base_price: string | number | null;
+    formatted_base_price?: string | null;
+    is_active: boolean;
+    sort_order: string | number;
+    opportunities_count?: number;
 };
 
 export type PipelineStage = {

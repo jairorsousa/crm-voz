@@ -11,6 +11,7 @@ use App\Models\Company;
 use App\Models\Contact;
 use App\Models\CrmOptionValue;
 use App\Models\CrmSetting;
+use App\Models\Product;
 use App\Models\User;
 use App\Support\CRM\PipelineDefaults;
 use Faker\Generator;
@@ -52,6 +53,24 @@ class DatabaseSeeder extends Seeder
 
         $users = User::query()->orderBy('id')->get();
         $teamUserIds = $users->pluck('id')->all();
+
+        collect([
+            ['Cobrança ativa', 'Cobrança', 'Operação de contato ativo com clientes inadimplentes.', 1500, 1],
+            ['Régua de cobrança', 'Automação', 'Jornadas automatizadas de cobrança por canal e estágio.', 900, 2],
+            ['Recuperação de inadimplência', 'Cobrança', 'Ação comercial para recuperação de carteira vencida.', 2500, 3],
+            ['Consultoria de cobrança', 'Consultoria', 'Diagnóstico e desenho de processo de cobrança.', 3500, 4],
+        ])->each(function (array $product): void {
+            Product::query()->updateOrCreate([
+                'slug' => str($product[0])->slug()->toString(),
+            ], [
+                'name' => $product[0],
+                'category' => $product[1],
+                'description' => $product[2],
+                'base_price' => $product[3],
+                'sort_order' => $product[4],
+                'is_active' => true,
+            ]);
+        });
 
         $callChannel = CommunicationChannel::query()->updateOrCreate([
             'name' => 'Ligação VOZ',

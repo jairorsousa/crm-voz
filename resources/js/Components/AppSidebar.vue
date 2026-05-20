@@ -54,6 +54,12 @@ const navigation: NavigationItem[] = [
         roles: ['admin', 'commercial_manager', 'sdr', 'closer'],
     },
     {
+        label: 'Produtos',
+        routeName: 'products.index',
+        icon: 'inventory_2',
+        roles: ['admin', 'commercial_manager'],
+    },
+    {
         label: 'Atividades',
         routeName: 'activities.index',
         icon: 'calendar_today',
